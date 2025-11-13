@@ -6,16 +6,15 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import jwt, JWTError
 from datetime import datetime
 
-# Debe ser la MISMA clave secreta usada por el backend PHP
-SECRET_KEY = "tu_clave_jwt_compartida"
-ALGORITHM = "HS256"
+# Leer configuración desde config.py (variables de entorno)
+from config import SECRET_KEY, JWT_ALGORITHM
 
 security = HTTPBearer()
 
 def verificar_jwt(credentials: HTTPAuthorizationCredentials = Security(security)):
     token = credentials.credentials
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[JWT_ALGORITHM])
         exp = payload.get("exp")
         if exp and datetime.utcfromtimestamp(exp) < datetime.utcnow():
             raise HTTPException(status_code=401, detail="Token expirado")

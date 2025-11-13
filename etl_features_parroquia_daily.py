@@ -45,10 +45,10 @@ from sqlalchemy import create_engine, text
 from datetime import datetime
 import logging
 
-# --- CONFIGURACIÓN ---
-DB_URI = "mysql+pymysql://root:tu_contraseña@localhost/epsdc_principal"
+# Usar configuración desde config.py (variables de entorno)
+from config import DB_URI, LOG_FILE
+
 QUERY_FILE = "features_diarias.sql"
-LOG_FILE = "etl_features.log"
 
 logging.basicConfig(filename=LOG_FILE,
                     level=logging.INFO,

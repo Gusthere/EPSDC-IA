@@ -6,10 +6,12 @@ from model_loader import load_model, predict_from_dict
 import logging
 from datetime import datetime
 
+from config import LOG_FILE
+
 app = FastAPI(title="IA EPSDC - Servicio de Inferencia")
 
 # Configuración de log
-logging.basicConfig(filename="ia_audit.log", level=logging.INFO,
+logging.basicConfig(filename=LOG_FILE, level=logging.INFO,
                     format="%(asctime)s [%(levelname)s] %(message)s")
 
 # Cargar modelo al iniciar

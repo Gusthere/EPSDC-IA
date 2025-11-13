@@ -12,7 +12,8 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 # --- 1. Conexión y carga del dataset ---
-DB_URI = "mysql+pymysql://root:tu_contraseña@localhost/epsdc_principal"
+from config import DB_URI
+
 engine = create_engine(DB_URI)
 df = pd.read_sql("SELECT * FROM dataset_entrenamiento", engine)
 

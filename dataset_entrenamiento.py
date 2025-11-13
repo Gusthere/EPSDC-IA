@@ -4,7 +4,7 @@
 import pandas as pd
 from sqlalchemy import create_engine
 
-DB_URI = "mysql+pymysql://root:tu_contraseña@localhost/epsdc_principal"
+from config import DB_URI
 
 def cargar_dataset():
     engine = create_engine(DB_URI)
