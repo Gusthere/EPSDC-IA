@@ -10,6 +10,8 @@ from sklearn.preprocessing import LabelEncoder
 import joblib
 import matplotlib.pyplot as plt
 import seaborn as sns
+import os
+from config import MODEL_DIR, MODEL_PATH, ENCODER_PATH
 
 # --- 1. Conexión y carga del dataset ---
 from config import DB_URI
@@ -66,8 +68,8 @@ print("\n📈 REPORTE DE CLASIFICACIÓN:")
 print(classification_report(y_test, y_pred, target_names=encoder.classes_))
 
 # --- 6. Guardar modelo y metadatos ---
-joblib.dump(model, "modelo_cart.joblib")
-joblib.dump(encoder, "encoder_etiquetas.joblib")
+joblib.dump(model, os.path.join(MODEL_DIR, MODEL_PATH))
+joblib.dump(encoder, os.path.join(MODEL_DIR, ENCODER_PATH))
 print("💾 Modelo y codificador guardados.")
 
 # --- 7. Visualización opcional del árbol ---

@@ -20,3 +20,11 @@ JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
 
 # --- LOGS ---
 LOG_FILE = os.getenv("LOG_FILE", "ia_audit.log")
+
+# --- RUTAS DE ARTEFACTOS ML ---
+# Directorio donde se guardan los modelos (por defecto la raíz del proyecto)
+MODEL_DIR = os.getenv("MODEL_DIR", "./")
+# Nombre del archivo del modelo 'activo' (sin versión). El reentrenamiento puede generar archivos versionados
+MODEL_PATH = os.getenv("MODEL_PATH", "modelo_cart.joblib")
+# Nombre del archivo del codificador de etiquetas
+ENCODER_PATH = os.getenv("ENCODER_PATH", "encoder_etiquetas.joblib")

@@ -2,17 +2,20 @@
 import joblib
 from sklearn.tree import DecisionTreeClassifier
 import pandas as pd
+import os
 
-MODEL_PATH = "modelo_cart.joblib"
-ENCODER_PATH = "encoder_etiquetas.joblib"
+from config import MODEL_DIR, MODEL_PATH, ENCODER_PATH
+
+MODEL_FULLPATH = os.path.join(MODEL_DIR, MODEL_PATH)
+ENCODER_FULLPATH = os.path.join(MODEL_DIR, ENCODER_PATH)
 
 model: DecisionTreeClassifier = None
 encoder = None
 
 def load_model():
     global model, encoder
-    model = joblib.load(MODEL_PATH)
-    encoder = joblib.load(ENCODER_PATH)
+    model = joblib.load(MODEL_FULLPATH)
+    encoder = joblib.load(ENCODER_FULLPATH)
     print("✅ Modelo cargado correctamente.")
 
 def predict_from_dict(data: dict):

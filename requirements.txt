@@ -1,0 +1,13 @@
+fastapi
+uvicorn
+pydantic
+python-dotenv
+sqlalchemy
+pymysql
+python-jose
+pandas
+scikit-learn
+joblib
+matplotlib
+seaborn
+scipy

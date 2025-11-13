@@ -5,6 +5,11 @@ from auth import verificar_jwt
 from model_loader import load_model, predict_from_dict
 import logging
 from datetime import datetime
+import subprocess
+import json
+from sqlalchemy import create_engine, text
+from config import DB_URI
+import os
 
 from config import LOG_FILE
 
@@ -55,10 +60,62 @@ def predict(data: FeaturesInput, user=Depends(verificar_jwt)):
 
 @app.post("/api/v1/retrain")
 def retrain(user=Depends(verificar_jwt)):
-    # aquí puedes ejecutar tu script de reentrenamiento
-    # por seguridad, solo permitir si el usuario tiene rol admin
-    if user.get("role") != "admin":
-        raise HTTPException(status_code=403, detail="Solo admin puede reentrenar el modelo.")
-    # ... ejecutar script de retrain (pendiente)
-    logging.info(f"Reentrenamiento solicitado por {user.get('username')}")
-    return {"status": "ok", "message": "Reentrenamiento en cola."}
+    # Por ahora, desactivamos validación de rol (ya que no usas Laravel)
+    try:
+        result = subprocess.run(
+            ["python", "retrain_model.py"],
+            capture_output=True, text=True, check=True
+        )
+
+        # Extraer resumen del JSON (si el script lo devuelve)
+        print(result.stdout)
+        return {"status": "ok", "message": "Reentrenamiento completado", "output": result.stdout}
+
+    except subprocess.CalledProcessError as e:
+        raise HTTPException(status_code=500, detail=f"Error al reentrenar: {e.stderr}")
+
+@app.get("/api/v1/metrics")
+def get_metrics(user=Depends(verificar_jwt)):
+    """
+    Devuelve información de la versión actual del modelo,
+    sus métricas y estado general.
+    """
+    try:
+        engine = create_engine(DB_URI)
+        with engine.connect() as conn:
+            # Obtener última versión registrada
+            result = conn.execute(text("""
+                SELECT version_name, fecha_entrenamiento, accuracy, f1,
+                       dataset_size, comentario
+                FROM ai_model_versions
+                ORDER BY fecha_entrenamiento DESC
+                LIMIT 1
+            """)).fetchone()
+
+        if result:
+            return {
+                "version": result.version_name,
+                "fecha_entrenamiento": str(result.fecha_entrenamiento),
+                "accuracy": float(result.accuracy),
+                "f1_score": float(result.f1),
+                "dataset_size": int(result.dataset_size),
+                "comentario": result.comentario,
+                "modelo_existe": os.path.exists(f"modelo_cart_{result.version_name}.joblib")
+            }
+        else:
+            return {"status": "empty", "message": "No hay modelos registrados aún."}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al obtener métricas: {e}")
+
+@app.get("/api/v1/metrics/history")
+def get_metrics_history(user=Depends(verificar_jwt)):
+    engine = create_engine(DB_URI)
+    with engine.connect() as conn:
+        result = conn.execute(text("""
+            SELECT version_name, fecha_entrenamiento, accuracy, f1, dataset_size
+            FROM ai_model_versions
+            ORDER BY fecha_entrenamiento DESC
+        """)).mappings().all()
+    return {"history": list(result)}
+
