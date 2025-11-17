@@ -43,24 +43,20 @@ def status(user=Depends(verificar_jwt)):
 
 @app.post("/api/v1/recommendations")
 def predict(data: FeaturesInput, user=Depends(verificar_jwt)):
-    try:
-        result = predict_from_dict(data.dict())
-        # Registrar en bitácora
-        logging.info(f"Usuario:{user.get('username','?')} "
-                     f"Predicción:{result.get('prediction')} "
-                     f"Confianza:{result.get('confidence')}")
+    result = predict_from_dict(data.dict())
 
-        return {
-            "timestamp": datetime.utcnow().isoformat(),
-            "model_version": "cart_v1",
-            "prediction": result["prediction"],
-            "confidence": result["confidence"],
-            "probabilities": result["probabilities"]
-        }
-    except Exception as e:
-        # Log the full exception for debugging and return the message in the response
-        logging.exception("Error en /api/v1/recommendations")
-        raise HTTPException(status_code=500, detail=str(e))
+    # Registrar en bitácora
+    logging.info(f"Usuario:{user.get('username','?')} "
+                 f"Predicción:{result['prediction']} "
+                 f"Confianza:{result['confidence']}")
+
+    return {
+        "timestamp": datetime.utcnow().isoformat(),
+        "model_version": "cart_v1",
+        "prediction": result["prediction"],
+        "confidence": result["confidence"],
+        "probabilities": result["probabilities"]
+    }
 
 @app.post("/api/v1/retrain")
 def retrain(user=Depends(verificar_jwt)):
