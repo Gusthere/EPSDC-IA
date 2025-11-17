@@ -14,7 +14,7 @@ import shutil
 import os
 
 def retrain_model():
-    print("🚀 Iniciando reentrenamiento del modelo CART...")
+    print("Iniciando reentrenamiento del modelo CART...")
 
     engine = create_engine(DB_URI)
     df = pd.read_sql("SELECT * FROM dataset_entrenamiento", engine)
@@ -30,6 +30,16 @@ def retrain_model():
 
     X = df.drop(columns=[target_col])
     y = df[target_col]
+
+    # Eliminar o convertir columnas no numéricas (fechas, strings) antes de entrenar
+    # sklearn espera arrays numéricos; si existen columnas tipo date u object las quitamos
+    non_numeric_cols = X.select_dtypes(exclude=["number"]).columns.tolist()
+    if non_numeric_cols:
+        print(f"Eliminando columnas no numéricas antes de entrenar: {non_numeric_cols}")
+        X = X.drop(columns=non_numeric_cols)
+
+    # Asegurar que todas las columnas son numéricas y rellenar NaNs con 0
+    X = X.apply(pd.to_numeric, errors='coerce').fillna(0)
 
     encoder = LabelEncoder()
     y_encoded = encoder.fit_transform(y)
@@ -67,11 +77,27 @@ def retrain_model():
         shutil.copyfile(model_path, active_model_path)
         shutil.copyfile(encoder_path, active_encoder_path)
     except Exception as e:
-        print(f"⚠️ No se pudo copiar artefactos a ruta activa: {e}")
+        print(f"No se pudo copiar artefactos a ruta activa: {e}")
 
     # --- Registrar en base de datos ---
     # Insertar metadatos de la nueva versión en la BD usando parámetros nombrados
+    # Asegurar que la tabla de versiones existe (evita errores si no fue creada previamente)
     with engine.begin() as conn:
+        create_sql = text("""
+            CREATE TABLE IF NOT EXISTS ai_model_versions (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                version_name VARCHAR(64) NOT NULL,
+                fecha_entrenamiento DATETIME NOT NULL,
+                accuracy DOUBLE,
+                f1 DOUBLE,
+                clases TEXT,
+                dataset_size INT,
+                ruta_modelo VARCHAR(255),
+                comentario TEXT
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+        """)
+        conn.execute(create_sql)
+
         insert_sql = text("""
             INSERT INTO ai_model_versions
             (version_name, fecha_entrenamiento, accuracy, f1, clases, dataset_size, ruta_modelo, comentario)
@@ -95,7 +121,7 @@ def retrain_model():
         "dataset_size": len(df)
     }
 
-    print(f"✅ Reentrenamiento completado ({version_name})")
+    print(f"Reentrenamiento completado ({version_name})")
     print(f"Accuracy: {acc:.4f} | F1: {f1:.4f}")
     # Imprimir JSON con resumen para que scripts llamantes lo consuman
     print(json.dumps(summary))

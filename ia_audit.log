@@ -778,3 +778,59 @@ ON DUPLICATE KEY UPDATE
 2025-11-16 23:59:00,158 [INFO] Usando archivo SQL: C:\xampp\htdocs\EPSDC-IA\features_diarias.sql
 2025-11-16 23:59:00,170 [INFO] Longitud SQL leido: 5445 chars
 2025-11-16 23:59:00,267 [INFO] ETL completado correctamente para 2025-11-16
+2025-11-17 01:37:07,278 [ERROR] Error en /api/v1/recommendations
+Traceback (most recent call last):
+  File "C:\xampp\htdocs\EPSDC-IA\main.py", line 47, in predict
+    result = predict_from_dict(data.dict())
+  File "C:\xampp\htdocs\EPSDC-IA\model_loader.py", line 32, in predict_from_dict
+    pred = model.predict(df)[0]
+           ~~~~~~~~~~~~~^^^^
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py", line 530, in predict
+    X = self._validate_X_predict(X, check_input)
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py", line 489, in _validate_X_predict
+    X = validate_data(
+        self,
+    ...<4 lines>...
+        ensure_all_finite=ensure_all_finite,
+    )
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\utils\validation.py", line 2929, in validate_data
+    _check_feature_names(_estimator, X, reset=reset)
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\utils\validation.py", line 2787, in _check_feature_names
+    raise ValueError(message)
+ValueError: The feature names should match those that were passed during fit.
+Feature names unseen at fit time:
+- solicitudes_pendientes
+- stock_capacidad
+Feature names seen at fit time, yet now missing:
+- entregas_pendientes
+- parroquia
+
+2025-11-17 01:37:24,682 [ERROR] Error en /api/v1/recommendations
+Traceback (most recent call last):
+  File "C:\xampp\htdocs\EPSDC-IA\main.py", line 47, in predict
+    result = predict_from_dict(data.dict())
+  File "C:\xampp\htdocs\EPSDC-IA\model_loader.py", line 32, in predict_from_dict
+    pred = model.predict(df)[0]
+           ~~~~~~~~~~~~~^^^^
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py", line 530, in predict
+    X = self._validate_X_predict(X, check_input)
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\tree\_classes.py", line 489, in _validate_X_predict
+    X = validate_data(
+        self,
+    ...<4 lines>...
+        ensure_all_finite=ensure_all_finite,
+    )
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\utils\validation.py", line 2929, in validate_data
+    _check_feature_names(_estimator, X, reset=reset)
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Usuario\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\utils\validation.py", line 2787, in _check_feature_names
+    raise ValueError(message)
+ValueError: The feature names should match those that were passed during fit.
+Feature names unseen at fit time:
+- solicitudes_pendientes
+- stock_capacidad
+Feature names seen at fit time, yet now missing:
+- entregas_pendientes
+- parroquia
+
