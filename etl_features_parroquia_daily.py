@@ -47,6 +47,7 @@ import logging
 
 # Usar configuración desde config.py (variables de entorno)
 from config import DB_URI, LOG_FILE
+from pathlib import Path
 
 QUERY_FILE = "features_diarias.sql"
 
@@ -58,9 +59,18 @@ def run_etl():
     logging.info("Inicio de ETL de features_parroquia_daily")
     engine = create_engine(DB_URI)
 
+    # Resolve query file relative to this script to avoid CWD confusion
+    query_path = Path(__file__).resolve().parent.joinpath(QUERY_FILE)
+    logging.info(f"Usando archivo SQL: {str(query_path)}")
+
+    if not query_path.exists():
+        raise FileNotFoundError(f"Query file not found: {str(query_path)}")
+
     with engine.connect() as conn:
-        with open(QUERY_FILE, "r", encoding="utf-8") as f:
-            sql = text(f.read())
+        with open(query_path, "r", encoding="utf-8") as f:
+            sql_text = f.read()
+        logging.info(f"Longitud SQL leido: {len(sql_text)} chars")
+        sql = text(sql_text)
         conn.execute(sql)
         conn.commit()
 
