@@ -233,14 +233,18 @@ def seed_solicitudes_for_voceros(engine, voceros_cedulas):
     # Solo generar solicitudes para los voceros creados en esta ejecución
     with engine.connect() as conn:
         for cedula in voceros_cedulas:
-            # crear 0 o 1 solicitud pendiente por vocero (evitar duplicados)
-            exists = conn.execute(text("SELECT COUNT(*) FROM solicitud WHERE vocero_comunal = :c"), {"c": cedula}).scalar()
-            if exists and exists > 0:
-                continue
-            estado = random.choice(["PENDIENTE", "POR PAGAR", "VALIDANDO"])
-            conn.execute(text(
-                "INSERT INTO solicitud (fecha, estado, vocero_comunal) VALUES (CURDATE(), :estado, :cedula)"
-            ), {"estado": estado, "cedula": cedula})
+            # crear entre 0 y 3 solicitudes por vocero para aumentar probabilidad de pendientes
+            n = random.choices([0,1,2,3], weights=[0.4,0.4,0.15,0.05])[0]
+            for _ in range(n):
+                # evitar duplicar innecesariamente: limitamos inserciones por vocero si ya existen muchas
+                exists = conn.execute(text("SELECT COUNT(*) FROM solicitud WHERE vocero_comunal = :c"), {"c": cedula}).scalar()
+                if exists and exists > 5:
+                    break
+                # aumentar la probabilidad de estado 'PENDIENTE' para generar entregas pendientes
+                estado = random.choices(["PENDIENTE", "POR PAGAR", "VALIDANDO", "FINALIZADA"], weights=[0.6,0.2,0.15,0.05])[0]
+                conn.execute(text(
+                    "INSERT INTO solicitud (fecha, estado, vocero_comunal) VALUES (CURDATE(), :estado, :cedula)"
+                ), {"estado": estado, "cedula": cedula})
         conn.commit()
 
 
@@ -252,6 +256,19 @@ def create_comunidades_consejos_voceros(engine, parroquias, comunidades_por_parr
                 # calcular id manual para comunidad (resiliente ante dumps sin AI)
                 next_id = conn.execute(text("SELECT IFNULL(MAX(id),0)+1 FROM comunidad")).scalar()
                 nombre_com = f"{fake.city()} {pid}-{ci}"
+                # asegurar nombre único (algunos dumps tienen índice único sobre nombre)
+                tries = 0
+                base_nombre = nombre_com
+                while True:
+                    exists_cnt = conn.execute(text("SELECT COUNT(*) FROM comunidad WHERE nombre = :nombre"), {"nombre": nombre_com}).scalar()
+                    if not exists_cnt:
+                        break
+                    tries += 1
+                    nombre_com = f"{base_nombre}-{random.randint(1000,9999)}"
+                    if tries > 5:
+                        # fallback: usar id como sufijo
+                        nombre_com = f"{base_nombre}-{next_id}"
+                        break
                 conn.execute(text("INSERT INTO comunidad (id, nombre, parroquia_id) VALUES (:id, :nombre, :p)"), {"id": next_id, "nombre": nombre_com, "p": pid})
                 comunidad_id = next_id
 
@@ -274,7 +291,12 @@ def create_comunidades_consejos_voceros(engine, parroquias, comunidades_por_parr
     return voceros_creados
 
 
-def seed_periodos(engine, parroquias=None):
+def seed_periodos(engine, parroquias=None, open_pct=0.05, close_pct=0.02):
+    """
+    Insert periodos with some fraction of parroquias starting or ending today.
+    - open_pct: fraction of parroquias to receive a periodo with fecha_inicio = today
+    - close_pct: fraction of parroquias to receive a periodo with fecha_final = today
+    """
     today = date.today()
     with engine.connect() as conn:
         # detectar columnas reales en la tabla periodo
@@ -305,11 +327,23 @@ def seed_periodos(engine, parroquias=None):
             stmt = text(f"INSERT INTO periodo ({cols_fragment}) VALUES ({vals_fragment})")
             conn.execute(stmt, params)
 
-        # Insert un periodo que hace que hoy sea fecha_inicio (para label 'abrir')
-        parroquia_for_main = random.choice(parroquias) if parroquia_col and parroquias else None
-        insert_period(today, today + timedelta(days=7), parroquia_for_main)
+        # Create periodos that start today for a configurable fraction of parroquias
+        if parroquia_col and parroquias:
+            k_open = max(1, int(len(parroquias) * open_pct))
+            selected_open = random.sample(parroquias, min(k_open, len(parroquias)))
+            for pid in selected_open:
+                insert_period(today, today + timedelta(days=7), pid)
 
-        # Añadir algunos periodos antiguos
+            # Create periodos that end today for another fraction
+            k_close = int(len(parroquias) * close_pct)
+            if k_close > 0:
+                selected_close = random.sample(parroquias, min(k_close, len(parroquias)))
+                for pid in selected_close:
+                    # create a period that ends today (started sometime earlier)
+                    inicio = today - timedelta(days=random.randint(7, 60))
+                    insert_period(inicio, today, pid)
+
+        # Añadir algunos periodos antiguos para diversidad
         for i in range(1, 6):
             inicio = today - timedelta(days=30 * i)
             fin = inicio + timedelta(days=5)
@@ -348,7 +382,7 @@ def main(args):
     seed_solicitudes_for_voceros(engine, voceros)
 
     print("Poblando periodos (se añaden periodos de ejemplo)...")
-    seed_periodos(engine, parroquias=parroquias)
+    seed_periodos(engine, parroquias=parroquias, open_pct=args.open_pct, close_pct=args.close_pct)
 
     print("✅ Seed completo. Ejecuta el ETL: python etl_features_parroquia_daily.py")
 
@@ -360,5 +394,7 @@ if __name__ == '__main__':
     parser.add_argument('--end-date', type=lambda s: datetime.strptime(s, '%Y-%m-%d').date(), default=date.today(), help='Fecha fin de generación de entregas (YYYY-MM-DD)')
     parser.add_argument('--avg-weekly', type=float, default=2.0, help='Promedio diario de eventos por semana (controla frecuencia de entregas)')
     parser.add_argument('--solicitud-prob', dest='solicitud_prob', type=float, default=0.02, help='Probabilidad diaria de solicitud por parroquia')
+    parser.add_argument('--open-pct', dest='open_pct', type=float, default=0.05, help='Fracción de parroquias que reciben un periodo que inicia hoy (ej. 0.1 = 10%%)')
+    parser.add_argument('--close-pct', dest='close_pct', type=float, default=0.02, help='Fracción de parroquias que reciben un periodo que finaliza hoy')
     args = parser.parse_args()
     main(args)

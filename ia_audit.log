@@ -770,3 +770,11 @@ ON DUPLICATE KEY UPDATE
 2025-11-16 23:08:39,353 [INFO] Usando archivo SQL: C:\xampp\htdocs\EPSDC-IA\features_diarias.sql
 2025-11-16 23:08:39,376 [INFO] Longitud SQL leido: 5445 chars
 2025-11-16 23:08:39,455 [INFO] ETL completado correctamente para 2025-11-16
+2025-11-16 23:51:50,839 [INFO] Inicio de ETL de features_parroquia_daily
+2025-11-16 23:51:50,885 [INFO] Usando archivo SQL: C:\xampp\htdocs\EPSDC-IA\features_diarias.sql
+2025-11-16 23:51:50,906 [INFO] Longitud SQL leido: 5445 chars
+2025-11-16 23:51:50,997 [INFO] ETL completado correctamente para 2025-11-16
+2025-11-16 23:59:00,113 [INFO] Inicio de ETL de features_parroquia_daily
+2025-11-16 23:59:00,158 [INFO] Usando archivo SQL: C:\xampp\htdocs\EPSDC-IA\features_diarias.sql
+2025-11-16 23:59:00,170 [INFO] Longitud SQL leido: 5445 chars
+2025-11-16 23:59:00,267 [INFO] ETL completado correctamente para 2025-11-16

@@ -26,7 +26,7 @@ print(df.head())
 features = [
     'consumo_7d', 'consumo_30d', 'promedio_12m',
     'dias_desde_ultima_entrega', 'stock_actual',
-    'stock_capacidad', 'solicitudes_pendientes',
+    'stock_minimo', 'entregas_pendientes',
     'proyeccion_72h', 'indicador_riesgo'
 ]
 
@@ -51,6 +51,10 @@ model = DecisionTreeClassifier(
     class_weight='balanced',
     random_state=42
 )
+# Simple missing value handling
+X_train = X_train.fillna(0)
+X_test = X_test.fillna(0)
+
 model.fit(X_train, y_train)
 
 # --- 5. Evaluar modelo ---
@@ -62,7 +66,8 @@ sns.heatmap(cm, annot=True, fmt='d',
             yticklabels=encoder.classes_)
 plt.xlabel("Predicción")
 plt.ylabel("Real")
-plt.show()
+plt.savefig('confusion_matrix.png', bbox_inches='tight')
+print('📷 Confusion matrix saved to confusion_matrix.png')
 
 print("\n📈 REPORTE DE CLASIFICACIÓN:")
 print(classification_report(y_test, y_pred, target_names=encoder.classes_))
@@ -72,6 +77,17 @@ joblib.dump(model, os.path.join(MODEL_DIR, MODEL_PATH))
 joblib.dump(encoder, os.path.join(MODEL_DIR, ENCODER_PATH))
 print("💾 Modelo y codificador guardados.")
 
+# Save textual report to a log file
+try:
+    with open('training.log', 'w', encoding='utf-8') as fh:
+        fh.write('Classification report:\n')
+        fh.write(classification_report(y_test, y_pred, target_names=encoder.classes_))
+        fh.write('\nConfusion matrix:\n')
+        fh.write(str(cm))
+    print('📄 Training log written to training.log')
+except Exception as e:
+    print('⚠️ Could not write training.log:', e)
+
 # --- 7. Visualización opcional del árbol ---
 plt.figure(figsize=(16,8))
 plot_tree(model,
@@ -80,10 +96,12 @@ plot_tree(model,
           filled=True,
           rounded=True,
           fontsize=8)
-plt.show()
+plt.savefig('tree.png', bbox_inches='tight')
+print('📷 Tree visualization saved to tree.png')
 
 # --- 8. Importancia de variables ---
 importances = pd.Series(model.feature_importances_, index=features)
 importances.sort_values(ascending=False).plot(kind='barh', figsize=(8,5), title='Importancia de variables')
-plt.show()
+plt.savefig('importances.png', bbox_inches='tight')
+print('📷 Feature importances saved to importances.png')
 print("✅ Entrenamiento completado")

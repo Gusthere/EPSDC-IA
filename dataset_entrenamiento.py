@@ -23,7 +23,7 @@ if __name__ == "__main__":
     # Limpieza básica (opcional)
     df = df.dropna(subset=[
         'consumo_7d','consumo_30d','promedio_12m',
-        'stock_actual','stock_capacidad'
+        'stock_actual','stock_minimo'
     ])
 
     # Guardar CSV para entrenamiento
