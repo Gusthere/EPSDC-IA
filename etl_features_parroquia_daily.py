@@ -33,9 +33,9 @@
 #         run_etl()
 #     except Exception as e:
 #         logging.error(f"Error en ETL: {str(e)}")
-#         print("❌ Error durante la ejecución del ETL, revisa etl_features.log")
+#         print("Error durante la ejecución del ETL, revisa etl_features.log")
 #     else:
-#         print("✅ ETL ejecutado correctamente")
+#         print("ETL ejecutado correctamente")
 
 # V2.0
 
@@ -79,7 +79,7 @@ def run_etl():
 if __name__ == "__main__":
     try:
         run_etl()
-        print("✅ ETL ejecutado correctamente")
+        print("ETL ejecutado correctamente")
     except Exception as e:
         logging.error(f"Error en ETL: {str(e)}")
-        print("❌ Error durante la ejecución del ETL, revisa etl_features.log")
+        print("Error durante la ejecución del ETL, revisa etl_features.log")

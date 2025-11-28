@@ -19,7 +19,7 @@ from config import DB_URI
 engine = create_engine(DB_URI)
 df = pd.read_sql("SELECT * FROM dataset_entrenamiento", engine)
 
-print("✅ Datos cargados:", df.shape)
+print("Datos cargados:", df.shape)
 print(df.head())
 
 # --- 2. Preparar variables ---
@@ -59,7 +59,7 @@ model.fit(X_train, y_train)
 
 # --- 5. Evaluar modelo ---
 y_pred = model.predict(X_test)
-print("\n📊 MATRIZ DE CONFUSIÓN:")
+print("\nMATRIZ DE CONFUSIÓN:")
 cm = confusion_matrix(y_test, y_pred)
 sns.heatmap(cm, annot=True, fmt='d',
             xticklabels=encoder.classes_,
@@ -67,26 +67,26 @@ sns.heatmap(cm, annot=True, fmt='d',
 plt.xlabel("Predicción")
 plt.ylabel("Real")
 plt.savefig('confusion_matrix.png', bbox_inches='tight')
-print('📷 Confusion matrix saved to confusion_matrix.png')
+print('Matriz de confusión guardada en confusion_matrix.png')
 
-print("\n📈 REPORTE DE CLASIFICACIÓN:")
+print("\nREPORTE DE CLASIFICACIÓN:")
 print(classification_report(y_test, y_pred, target_names=encoder.classes_))
 
 # --- 6. Guardar modelo y metadatos ---
 joblib.dump(model, os.path.join(MODEL_DIR, MODEL_PATH))
 joblib.dump(encoder, os.path.join(MODEL_DIR, ENCODER_PATH))
-print("💾 Modelo y codificador guardados.")
+print("Modelo y codificador guardados.")
 
 # Save textual report to a log file
 try:
     with open('training.log', 'w', encoding='utf-8') as fh:
-        fh.write('Classification report:\n')
+        fh.write('Reporte de clasificación:\n')
         fh.write(classification_report(y_test, y_pred, target_names=encoder.classes_))
-        fh.write('\nConfusion matrix:\n')
+        fh.write('\nMatriz de confusión:\n')
         fh.write(str(cm))
-    print('📄 Training log written to training.log')
+    print('Registro de entrenamiento guardado en training.log')
 except Exception as e:
-    print('⚠️ Could not write training.log:', e)
+    print('No se pudo escribir training.log:', e)
 
 # --- 7. Visualización opcional del árbol ---
 plt.figure(figsize=(16,8))
@@ -97,11 +97,11 @@ plot_tree(model,
           rounded=True,
           fontsize=8)
 plt.savefig('tree.png', bbox_inches='tight')
-print('📷 Tree visualization saved to tree.png')
+print('Visualización del árbol guardada en tree.png')
 
 # --- 8. Importancia de variables ---
 importances = pd.Series(model.feature_importances_, index=features)
 importances.sort_values(ascending=False).plot(kind='barh', figsize=(8,5), title='Importancia de variables')
 plt.savefig('importances.png', bbox_inches='tight')
-print('📷 Feature importances saved to importances.png')
-print("✅ Entrenamiento completado")
+print('Importancias de variables guardadas en importances.png')
+print("Entrenamiento completado")

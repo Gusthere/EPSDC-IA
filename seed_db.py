@@ -142,7 +142,7 @@ def ensure_tables(engine):
 
 def seed_parroquias(engine, n):
     # Deprecated in this environment: parroquias ya existen en la base de datos.
-    print("skip: no se crean parroquias (usar existentes)")
+    print("Omitido: no se crean parroquias (usar existentes)")
 
 
 def seed_almacenes(engine, parroquias):
@@ -364,7 +364,7 @@ def main(args):
         parroquias = [r[0] for r in conn.execute(text("SELECT id FROM parroquia WHERE municipio_id = 147")).fetchall()]
 
     if not parroquias:
-        print("⚠ No se encontraron parroquias con municipio_id = 147. Abortando.")
+        print("No se encontraron parroquias con municipio_id = 147. Abortando.")
         return
 
     print(f"Usando {len(parroquias)} parroquias del municipio 147")
@@ -384,7 +384,7 @@ def main(args):
     print("Poblando periodos (se añaden periodos de ejemplo)...")
     seed_periodos(engine, parroquias=parroquias, open_pct=args.open_pct, close_pct=args.close_pct)
 
-    print("✅ Seed completo. Ejecuta el ETL: python etl_features_parroquia_daily.py")
+    print("Seed completado. Ejecuta el ETL: python etl_features_parroquia_daily.py")
 
 
 if __name__ == '__main__':

@@ -16,7 +16,7 @@ def load_model():
     global model, encoder
     model = joblib.load(MODEL_FULLPATH)
     encoder = joblib.load(ENCODER_FULLPATH)
-    print("✅ Modelo cargado correctamente.")
+    print("Modelo cargado correctamente.")
 
 def predict_from_dict(data: dict):
     if model is None:

@@ -13,7 +13,7 @@ def check_drift():
     import os
     prev_csv = "dataset_entrenamiento.csv"
     if not os.path.exists(prev_csv):
-        print(f"⚠️ Archivo previo '{prev_csv}' no encontrado. Ejecuta dataset_entrenamiento.py para generarlo antes de monitorizar drift.")
+        print(f"Archivo previo '{prev_csv}' no encontrado. Ejecuta dataset_entrenamiento.py para generarlo antes de monitorizar drift.")
         return
 
     df_prev = pd.read_csv(prev_csv)  # dataset previo guardado
@@ -31,9 +31,9 @@ def check_drift():
     print(f"Variables con drift: {drift_count}/{total} ({ratio:.1%})")
 
     if ratio > THRESHOLD_DRIFT:
-        print("⚠️ ALERTA: Posible drift detectado, considera reentrenar.")
+        print("ALERTA: Posible deriva detectada, considera reentrenar.")
     else:
-        print("✅ Sin drift significativo.")
+        print("Sin deriva significativa.")
 
 if __name__ == "__main__":
     check_drift()

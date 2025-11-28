@@ -119,3 +119,4 @@ def get_metrics_history(user=Depends(verificar_jwt)):
         """)).mappings().all()
     return {"history": list(result)}
 
+#uvicorn main:app --reload --port 8000

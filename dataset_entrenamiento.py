@@ -28,4 +28,4 @@ if __name__ == "__main__":
 
     # Guardar CSV para entrenamiento
     df.to_csv("dataset_entrenamiento.csv", index=False)
-    print("✅ Dataset exportado a dataset_entrenamiento.csv")
+    print("Dataset exportado a dataset_entrenamiento.csv")
